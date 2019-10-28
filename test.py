@@ -154,15 +154,20 @@ if __name__ == '__main__':
 
     # load data
     for k, image_path in enumerate(image_list):
+        filename, file_ext = os.path.splitext(os.path.basename(image_path))
+        mask_file = result_folder + "/res_" + filename + '_mask.jpg'
+        original_file = result_folder + "/res_" + filename + "_original.jpg"
+        if os.path.exists(original_file): # if we already wrote the image, ignore it..
+            continue
         print("Test image {:d}/{:d}: {:s}".format(k+1, len(image_list), image_path), end='\r')
         image = imgproc.loadImage(image_path)
 
         bboxes, polys, score_text = test_net(net, image, args.text_threshold, args.link_threshold, args.low_text, args.cuda, args.poly, refine_net)
 
         # save score text
-        filename, file_ext = os.path.splitext(os.path.basename(image_path))
-        mask_file = result_folder + "/res_" + filename + '_mask.jpg'
         cv2.imwrite(mask_file, score_text)
+        # SAVE THE ORIGINAL IMAGE
+        cv2.imwrite(original_file, image)
 
         file_utils.saveResult(image_path, image[:,:,::-1], polys, dirname=result_folder)
 
